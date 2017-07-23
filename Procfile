@@ -1,2 +1,2 @@
-web: gunicorn scraping:app
+web: gunicorn WebNews:app
 
