@@ -1,0 +1,19 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>Audible Reddit</title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>
+<h1>Audible Reddit</h1>
+<audio controls><source src="/wav" type="audio/mp3"></audio>
+<br>
+{% for key,value in completelist.items() %}
+<a href="{{ key }}">{{value}}</a> <a href="{{ url_for('b', my_var=key)}}">Play</a>
+<br><br>
+{% endfor %}
+
+  </body>
+</html>
