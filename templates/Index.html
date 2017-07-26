@@ -11,7 +11,7 @@
 <audio controls><source src="/wav" type="audio/mp3"></audio>
 <br>
 {% for key,value in completelist.items() %}
-<a href="{{ key }}">{{value}}</a> <a href="{{ url_for('b', my_var=key)}}">Play</a>
+<a href="{{ key }}">{{value}}</a> <a href="{{ url_for('b', my_var=key,lang='en')}}">Play</a>
 <br><br>
 {% endfor %}
 

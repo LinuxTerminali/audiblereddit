@@ -3,6 +3,7 @@ from gtts import gTTS
 from collections import Counter
 from newspaper import Article
 import json, requests
+from textblob import TextBlob
 from collections import Counter
 app = Flask(__name__)
 
@@ -12,15 +13,21 @@ def b():
    # view structure of an individual post
    # print(json.dumps(r.json()['data']['children'][0]))
    my_var = request.args.get('my_var', None)
+   var = request.args.get('lang', None)
    print(my_var)
    subreddit = 'India'
    article = Article(my_var)
    article.download()
    article.parse()
-   tt = gTTS(text=article.text, lang="hi")
+   Qt = TextBlob(article.text)
+   if Counter(var) == Counter('en'):
+   	Qt = str(Qt)
+   else:
+    Qt = str(Qt.translate(to= var))	
+   tt = gTTS(text=Qt, lang="hi")
    tt.save("News.mp4")
    print("Done!")
-   return render_template('Play.html',text = article.text)
+   return render_template('Play.html',text = article.text,title =article.title,url =my_var)
 
    '''r = requests.get(
     'http://www.reddit.com/r/{}.json'.format(subreddit),

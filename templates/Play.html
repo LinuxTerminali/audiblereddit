@@ -7,8 +7,8 @@
     <style></style>
   </head>
   <body>
-<h1>Audible Reddit</h1>
-<audio controls><source src="/wav" type="audio/mp3"></audio>
+<h1>{{title}}</h1>
+<audio controls><source src="/wav" type="audio/mp3"></audio> <a href="{{ url_for('b', my_var=url,lang='hi')}}">Hindi</a><a href="{{ url_for('b', my_var=url,lang='ta')}}">Tamil</a><a href="{{ url_for('b', my_var=url,lang='bn')}}">Bengali</a><a href="{{ url_for('b', my_var=url,lang='fr')}}">French</a>
 <br>
 <p>
 {{text}}</p>
