@@ -20,14 +20,21 @@ def b():
    article.download()
    article.parse()
    Qt = TextBlob(article.text)
+   titletext = article.title
    if Counter(var) == Counter('en'):
    	Qt = str(Qt)
+   	tt = gTTS(text=Qt, lang='hi')
    else:
-    Qt = str(Qt.translate(to= var))	
-   tt = gTTS(text=Qt, lang="hi")
+    Qt = str(Qt.translate(to= var))
+    #print(Qt)
+    titletext = TextBlob(article.title)
+    titletext = str(titletext.translate(to = var))
+    tt = gTTS(text=Qt, lang=var)
+   
    tt.save("News.mp4")
    print("Done!")
-   return render_template('Play.html',text = article.text,title =article.title,url =my_var)
+
+   return render_template('Play.html',text = Qt,title =titletext,url =my_var)
 
    '''r = requests.get(
     'http://www.reddit.com/r/{}.json'.format(subreddit),
@@ -41,14 +48,11 @@ def b():
 		   newslist.append(post['data']['url'])
 		   print(post['data']['url'])
 	   return newslist	   '''
-
-
-
 @app.route('/')
-def hello():
-	subreddit = 'India'
+def all():
+	subreddit = 'all'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be']
+	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
 	newsurl = []
 	newstitle = []
 	dictk = {}
@@ -63,6 +67,110 @@ def hello():
 	#print(dictk)
 
 	return  render_template('Index.html',completelist = dictk)
+
+
+@app.route('/India')
+def hello():
+	subreddit = 'India'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
+	newsurl = []
+	newstitle = []
+	dictk = {}
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+
+	    if domain not in notallowed_domain:
+		    newsurl.append(post['data']['url'])
+		    newstitle.append(post['data']['title'])
+		    dictk.update({post['data']['url']:post['data']['title']})
+	#print(newslist)
+	#print(dictk)
+
+	return  render_template('Index.html',completelist = dictk)
+
+@app.route('/worldnews')
+def worldnews():
+	subreddit = 'worldnews'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
+	newsurl = []
+	newstitle = []
+	dictk = {}
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+
+	    if domain not in notallowed_domain:
+		    newsurl.append(post['data']['url'])
+		    newstitle.append(post['data']['title'])
+		    dictk.update({post['data']['url']:post['data']['title']})
+	#print(newslist)
+	#print(dictk)
+
+	return  render_template('Index.html',completelist = dictk)
+
+@app.route('/upliftingnews')
+def upliftingnews():
+	subreddit = 'UpliftingNews'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	notallowed_domain = ['youtube.com','self.UpliftingNews','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
+	newsurl = []
+	newstitle = []
+	dictk = {}
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+
+	    if domain not in notallowed_domain:
+		    newsurl.append(post['data']['url'])
+		    newstitle.append(post['data']['title'])
+		    dictk.update({post['data']['url']:post['data']['title']})
+	#print(newslist)
+	#print(dictk)
+
+	return  render_template('Index.html',completelist = dictk)
+
+
+@app.route('/technology')
+def technology():
+	subreddit = 'Technology'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	notallowed_domain = ['youtube.com','self.technology','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
+	newsurl = []
+	newstitle = []
+	dictk = {}
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+
+	    if domain not in notallowed_domain:
+		    newsurl.append(post['data']['url'])
+		    newstitle.append(post['data']['title'])
+		    dictk.update({post['data']['url']:post['data']['title']})
+	#print(newslist)
+	#print(dictk)
+
+	return  render_template('Index.html',completelist = dictk)
+
+
+@app.route('/upliftingkhabre')
+def upliftingkhabre():
+	subreddit = 'UpliftingKhabre'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	notallowed_domain = ['streamable.com','gfycat.com','youtube.com','self.UpliftingKhabre','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
+	newsurl = []
+	newstitle = []
+	dictk = {}
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+
+	    if domain not in notallowed_domain:
+		    newsurl.append(post['data']['url'])
+		    newstitle.append(post['data']['title'])
+		    dictk.update({post['data']['url']:post['data']['title']})
+	#print(newslist)
+	#print(dictk)
+
+	return  render_template('Index.html',completelist = dictk)
+
 
 @app.route('/handle_data', methods=['POST'])
 def handle_data():
