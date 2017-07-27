@@ -69,7 +69,7 @@ def all():
 	return  render_template('Index.html',completelist = dictk)
 
 
-@app.route('/India')
+@app.route('/india')
 def hello():
 	subreddit = 'India'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
