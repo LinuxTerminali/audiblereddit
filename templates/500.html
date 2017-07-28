@@ -1,14 +1,18 @@
 <!doctype html>
 <html>
    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <!-- Latest compiled and minified CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
       <!-- Optional theme -->
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Audible Reddit</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+      <title>Internal Error 500 | Audible Reddit</title>
       <meta content="">
       <style>
+         p {
+         white-space: pre-wrap;
+         }
          footer {
          background-color: #072454;
          color: #000000;
@@ -36,61 +40,25 @@
                <a class="nav-item nav-link" href="/upliftingnews">UpliftingNews</a>
                <a class="nav-item nav-link" href="/upliftingkhabre">UpliftingKhabre</a>
             </div>
-            <form class="form-inline my-2 my-lg-0" action="{{ url_for('search') }}" method = 'POST' >
+            <form class="form-inline my-2 my-lg-0" action="{{ url_for('search') }}" method = 'POST'>
                <input class="form-control mr-sm-2" name = "text" type="text" placeholder="Subreddit">
-               <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">Search </button>
+               <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search </button>
             </form>
          </div>
       </nav>
    </head>
    <body>
-      <div class="card" style = "background-color:#072454;">
-         <img width="204" height="136" class="rounded mx-auto d-block" src="/static/reddit.png" alt="Card image cap">
-         <h4 class="card text-center text-uppercase" >{{redditname}}</h4>
-      </div>
-         <p class="text-uppercase" align="center" ><a href="{{ url_for('hotarticle', subreddit=redditname)}}"> Hot</a> | <a href="{{ url_for('newarticle', subreddit=redditname)}}"> New</a> |<a href="{{ url_for('controversialarticle', subreddit=redditname)}}"> controversial</a></p>
-      {% for item in completelist %}
-      <div class="container">
-         <div class="row">
-            <div class="col-md-2">
-               <br>
-               <div class="card text-center">
-                  <div class="card-block">
-                     <a href="{{ url_for('audioandtext', sourceurl=item['url'],lang='en')}}"> Play</a>
-                     <i class="fa fa-play-circle" aria-hidden="true"> </i>
-                  </div>
-               </div>
-            </div>
-            <div class="col-md-10">
-               <div class="card card-inverse card-success">
-                  <div class="card">
-                     <div class="card-block">
-                        <h4 class="card-text"> <a href="{{ item['url'] }}">{{item['title']}}</a></h4>
-                        <button type="button" class="btn btn-success"><a href="{{ url_for('audioandtext', sourceurl=item['url'],lang='hi')}}" class="card-link" style="color:black">Hindi</a></button>
-                        <button type="button" class="btn btn-success"><a href="{{ url_for('audioandtext', sourceurl=item['url'],lang='bn')}}" class="card-link" style="color:black">Bangali</a></button>
-                        <button type="button" class="btn btn-success"><a href="{{ url_for('audioandtext', sourceurl=item['url'],lang='ta')}}" class="card-link" style="color:black">Tamil</a></button>
-                        <div class="btn-group">
-                           <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                           Other
-                           </button>
-                           <div class="dropdown-menu">
-                              <a class="dropdown-item" href="{{ url_for('audioandtext', sourceurl=item['url'],lang='en')}}">English</a>
-                              <a class="dropdown-item" href="{{ url_for('audioandtext', sourceurl=item['url'],lang='fr')}}">French</a>
-                              <a class="dropdown-item" href="{{ url_for('audioandtext', sourceurl=item['url'],lang='zh')}}">Chinese</a>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </div>
-      <br>
-      {% endfor %}
+{% block body %}
+  <h1 class="text-center">Internal Server Error</h1>
+  <img width="504" height="504" class="rounded mx-auto d-block" src="/static/reddit404.png" alt="Card image cap">
+  <p class="text-center">Servers crushed under the load.
+  <p class="text-center"><a href="{{ url_for('all') }}">Try again</a>
+{% endblock %}
       <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~ Required Javascript files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
       <!-- Latest compiled and minified JavaScript -->
       <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+      <!-- Latest compiled and minified JavaScript -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
    </body>
