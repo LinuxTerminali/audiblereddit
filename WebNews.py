@@ -217,6 +217,71 @@ def upliftingkhabre():
 	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
 
 
+@app.route('/hot', methods=['GET'])
+def hotarticle():
+	subreddit = request.args.get('subreddit', None)
+	r = requests.get('http://www.reddit.com/r/{}/new.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+          
+	    if domain not in notallowed_domain:
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+
+
+@app.route('/new', methods=['GET'])
+def newarticle():
+	subreddit = request.args.get('subreddit', None)
+	r = requests.get('http://www.reddit.com/r/{}/new.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+          
+	    if domain not in notallowed_domain:
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+
+
+@app.route('/controversial', methods=['GET'])
+def controversialarticle():
+	subreddit = request.args.get('subreddit', None)
+	r = requests.get('http://www.reddit.com/r/{}/controversial.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+          
+	    if domain not in notallowed_domain:
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+
 def temp():
 	article = Article("http://www.scmp.com/week-asia/geopolitics/article/2103656/indias-got-itself-fine-mess-doklam-its-time-get-out-and-let")
 	article.download()
@@ -237,5 +302,14 @@ def streamwav():
                 data = fwav.read(1024)
     return Response(generate(), mimetype="audio/x-wav")	
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template('500.html'), 500    
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

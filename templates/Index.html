@@ -8,8 +8,21 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Audible Reddit</title>
       <meta content="">
-      <style></style>
-      <nav class="navbar navbar-toggleable-md navbar navbar-light" style="background-color: #8b78e8;">
+      <style>
+         footer {
+         background-color: #072454;
+         color: #000000;
+         padding: 32px;
+         }
+         footer a {
+         color: #f5f5f5;
+         }
+         footer a:hover {
+         color: #8fbf42;
+         text-decoration: none;
+         }
+      </style>
+      <nav class="navbar navbar-toggleable-md navbar-inverse  " style="background-color: #072454;">
          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
          <span class="navbar-toggler-icon"></span>
          </button>
@@ -31,10 +44,11 @@
       </nav>
    </head>
    <body>
-      <div class="card">
-         <img width="204" height="136" class="rounded mx-auto d-block" src="http://www.pngall.com/wp-content/uploads/2016/07/Reddit-Download-PNG.png" alt="Card image cap">
-         <h4 class="card text-center text-uppercase">{{redditname}}</h4>
+      <div class="card" style = "background-color:#072454;">
+         <img width="204" height="136" class="rounded mx-auto d-block" src="/static/Reddit.png" alt="Card image cap">
+         <h4 class="card text-center text-uppercase" >{{redditname}}</h4>
       </div>
+         <p class="text-uppercase" align="center" ><a href="{{ url_for('hotarticle', subreddit=redditname)}}"> Hot</a> | <a href="{{ url_for('newarticle', subreddit=redditname)}}"> New</a> |<a href="{{ url_for('controversialarticle', subreddit=redditname)}}"> controversial</a></p>
       {% for item in completelist %}
       <div class="container">
          <div class="row">
@@ -80,4 +94,11 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
    </body>
+   <footer class="text-center">
+      <a class="up-arrow" href="#myPage" data-toggle="tooltip" title="TO TOP">
+      <span class="glyphicon glyphicon-chevron-up"></span>
+      </a><br><br>
+      <p>Audible Reddit Made By <a href="https://github.com/LinuxTerminali"  title="My Github">LinuxTerminali</a></p>
+      <p>REDDIT and the ALIEN Logo are registered trademarks of reddit inc.</p>
+   </footer>
 </html>
