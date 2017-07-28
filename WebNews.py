@@ -1,40 +1,45 @@
-from flask import Flask,Response,render_template,request
+from flask import Flask,Response,render_template,request,jsonify
 from gtts import gTTS
 from collections import Counter
 from newspaper import Article
 import json, requests
 from textblob import TextBlob
 from collections import Counter
+import json
 app = Flask(__name__)
 
+notallowed_domain = ['youtube.com','self.india','self.worldnews','self.upliftingnews','self.technology',
+                     'self.UpliftingKhabre','self.tifu','self.jokes','self.PUBATTLEGROUNDS','self.ProRevenge',
+                     'self.nba','self.MaliciousCompliance','self.ProRevenge',
+                     'i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be',
+                     'twitter.com','imgur.com','pbs.twimg.com']
 
-@app.route('/b', methods=['GET'])
-def b():
-   # view structure of an individual post
-   # print(json.dumps(r.json()['data']['children'][0]))
-   my_var = request.args.get('my_var', None)
-   var = request.args.get('lang', None)
-   print(my_var)
-   subreddit = 'India'
-   article = Article(my_var)
+
+
+
+@app.route('/audioandtext', methods=['GET'])
+def audioandtext():
+   sourceurl = request.args.get('sourceurl', None)
+   language = request.args.get('lang', None)
+   article = Article(sourceurl)
    article.download()
    article.parse()
    Qt = TextBlob(article.text)
    titletext = article.title
-   if Counter(var) == Counter('en'):
+   if Counter(language) == Counter('en'):
    	Qt = str(Qt)
    	tt = gTTS(text=Qt, lang='hi')
    else:
-    Qt = str(Qt.translate(to= var))
+    Qt = str(Qt.translate(to= language))
     #print(Qt)
     titletext = TextBlob(article.title)
-    titletext = str(titletext.translate(to = var))
-    tt = gTTS(text=Qt, lang=var)
+    titletext = str(titletext.translate(to = language))
+    tt = gTTS(text=Qt, lang=language)
    
    tt.save("News.mp4")
-   print("Done!")
+   #print("Done!")
 
-   return render_template('Play.html',text = Qt,title =titletext,url =my_var)
+   return render_template('Play.html',text = Qt,title =titletext,url =sourceurl)
 
    '''r = requests.get(
     'http://www.reddit.com/r/{}.json'.format(subreddit),
@@ -48,133 +53,168 @@ def b():
 		   newslist.append(post['data']['url'])
 		   print(post['data']['url'])
 	   return newslist	   '''
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+	text = ''
+	if request.method == 'POST':
+		text = request.form['text']
+		print(text)
+	subreddit = text
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
+	for post in r.json()['data']['children']:
+		#print(post)
+		domain = post['data']['domain']
+		if domain not in notallowed_domain:
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results, redditname = subreddit)
+
+
+
+
 @app.route('/')
 def all():
 	subreddit = 'all'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
 	for post in r.json()['data']['children']:
 	    domain = post['data']['domain']
-
+          
 	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
-	#print(newslist)
-	#print(dictk)
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
 
-	return  render_template('Index.html',completelist = dictk)
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
 
 
 @app.route('/india')
-def hello():
+def india():
 	subreddit = 'India'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
 	for post in r.json()['data']['children']:
 	    domain = post['data']['domain']
-
+          
 	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
-	#print(newslist)
-	#print(dictk)
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
 
-	return  render_template('Index.html',completelist = dictk)
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+
 
 @app.route('/worldnews')
 def worldnews():
 	subreddit = 'worldnews'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.india','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
 	for post in r.json()['data']['children']:
 	    domain = post['data']['domain']
-
+          
 	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
 	#print(newslist)
-	#print(dictk)
+	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
 
-	return  render_template('Index.html',completelist = dictk)
-
-@app.route('/upliftingnews')
-def upliftingnews():
-	subreddit = 'UpliftingNews'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.UpliftingNews','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-
-	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
-	#print(newslist)
-	#print(dictk)
-
-	return  render_template('Index.html',completelist = dictk)
 
 
 @app.route('/technology')
 def technology():
 	subreddit = 'Technology'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['youtube.com','self.technology','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
 	for post in r.json()['data']['children']:
 	    domain = post['data']['domain']
-
+          
 	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
-	#print(newslist)
-	#print(dictk)
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
 
-	return  render_template('Index.html',completelist = dictk)
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+
+
+
+@app.route('/upliftingnews')
+def upliftingnews():
+	subreddit = 'UpliftingNews'
+	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
+	for post in r.json()['data']['children']:
+	    domain = post['data']['domain']
+          
+	    if domain not in notallowed_domain:
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
+	#print(newslist)
+	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+
 
 
 @app.route('/upliftingkhabre')
 def upliftingkhabre():
 	subreddit = 'UpliftingKhabre'
 	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	notallowed_domain = ['streamable.com','gfycat.com','youtube.com','self.UpliftingKhabre','i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be','twitter.com','imgur.com','pbs.twimg.com']
-	newsurl = []
-	newstitle = []
-	dictk = {}
+	d = {}
+	json_results = []
+	#print(r.json()['data']['children'][0])
 	for post in r.json()['data']['children']:
 	    domain = post['data']['domain']
-
+          
 	    if domain not in notallowed_domain:
-		    newsurl.append(post['data']['url'])
-		    newstitle.append(post['data']['title'])
-		    dictk.update({post['data']['url']:post['data']['title']})
+		    d = {'url':post['data']['url'],
+		          'title':post['data']['title'],
+		          'domain':post['data']['domain'],
+		          'thumbnail':post['data']['thumbnail']
+
+		    }
+		    json_results.append(d)
 	#print(newslist)
-	#print(dictk)
-
-	return  render_template('Index.html',completelist = dictk)
-
-
-@app.route('/handle_data', methods=['POST'])
-def handle_data():
-    projectpath = request.form['projectFilepath']
+	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
 
 
 def temp():
@@ -184,6 +224,9 @@ def temp():
 	tt = gTTS(text=article.text, lang="hi")
 	tt.save("News.wav")
 	print("Done!")
+
+
+
 @app.route("/wav")
 def streamwav():
     def generate():
