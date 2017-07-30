@@ -14,6 +14,7 @@
          white-space: pre-wrap;
          }
          footer {
+         bottom: 0;    
          background-color: #072454;
          color: #000000;
          padding: 32px;
@@ -51,7 +52,7 @@
 {% block body %}
   <h1 class="text-center">Internal Server Error</h1>
   <img width="504" height="504" class="rounded mx-auto d-block" src="/static/reddit404.png" alt="Card image cap">
-  <p class="text-center">Servers crushed under the load.
+  <p class="text-center">Servers crushed under the load or Article have No text.
   <p class="text-center"><a href="{{ url_for('all') }}">Try again</a>
 {% endblock %}
       <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~ Required Javascript files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->

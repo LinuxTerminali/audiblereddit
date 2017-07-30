@@ -1,47 +1,54 @@
-from flask import Flask,Response,render_template,request,jsonify
+from flask import Flask, Response, render_template, request, jsonify, redirect
 from gtts import gTTS
 from collections import Counter
 from newspaper import Article
-import json, requests
+import json
+import requests
 from textblob import TextBlob
 from collections import Counter
 import json
 app = Flask(__name__)
 
-notallowed_domain = ['youtube.com','self.india','self.worldnews','self.upliftingnews','self.technology',
-                     'self.UpliftingKhabre','self.tifu','self.jokes','self.PUBATTLEGROUNDS','self.ProRevenge',
-                     'self.nba','self.MaliciousCompliance','self.ProRevenge',
-                     'i.redd.it','i.imgur.com','i.redditmedia.com','youtu.be',
-                     'twitter.com','imgur.com','pbs.twimg.com']
+notallowed_domain = ['youtube.com', 'self.india', 'self.worldnews', 'self.upliftingnews', 'self.technology',
+                     'self.UpliftingKhabre', 'self.tifu', 'self.jokes', 'self.PUBATTLEGROUNDS', 'self.ProRevenge',
+                     'self.nba', 'self.MaliciousCompliance', 'self.ProRevenge',
+                     'i.redd.it', 'i.imgur.com', 'i.redditmedia.com', 'youtu.be',
+                     'twitter.com', 'imgur.com', 'pbs.twimg.com','streamable.com','self.Jokes','self.explainlikeimfive','gfycat.com',
+                     'self.Showerthoughts','self.leagueoflegends','media.giphy.com','self.hearthstone','self.circlejerk','i.gyazo.com','self.AskReddit','clippituser.tv']
 
 
+global nextpagecount
+nextpagecount = 25
 
 
 @app.route('/audioandtext', methods=['GET'])
 def audioandtext():
-   sourceurl = request.args.get('sourceurl', None)
-   language = request.args.get('lang', None)
-   article = Article(sourceurl)
-   article.download()
-   article.parse()
-   Qt = TextBlob(article.text)
-   titletext = article.title
-   if Counter(language) == Counter('en'):
-   	Qt = str(Qt)
-   	tt = gTTS(text=Qt, lang='hi')
-   else:
-    Qt = str(Qt.translate(to= language))
-    #print(Qt)
-    titletext = TextBlob(article.title)
-    titletext = str(titletext.translate(to = language))
-    tt = gTTS(text=Qt, lang=language)
-   
-   tt.save("News.mp4")
-   #print("Done!")
+    sourceurl = request.args.get('sourceurl', None)
+    language = request.args.get('lang', None)
+    try:
+        article = Article(sourceurl)
+        article.download()
+        article.parse()
+        Qt = TextBlob(article.text)
+        titletext = article.title
+        if Counter(language) == Counter('en'):
+            Qt = str(Qt)
+            tt = gTTS(text=Qt, lang='en-us')
+        else:
+            Qt = str(Qt.translate(to=language))
+            # print(Qt)
+            titletext = TextBlob(article.title)
+            titletext = str(titletext.translate(to=language))
+            tt = gTTS(text=Qt, lang=language)
 
-   return render_template('Play.html',text = Qt,title =titletext,url =sourceurl)
+        tt.save("News.mp4")
+    except:
+        return redirect(sourceurl)
+    # print("Done!")
 
-   '''r = requests.get(
+    return render_template('Play.html', text=Qt, title=titletext, url=sourceurl)
+
+    '''r = requests.get(
     'http://www.reddit.com/r/{}.json'.format(subreddit),
     headers={'user-agent': 'Mozilla/5.0'} 
    )
@@ -54,242 +61,314 @@ def audioandtext():
 		   print(post['data']['url'])
 	   return newslist	   '''
 
+
+@app.route('/nextpage', methods=['GET'])
+def nextpage():
+    print(nextpagecount)
+    sortedwords = ['hot','new','controversial']
+    isitsorted=request.args.get('sorted', None) 
+    after = request.args.get('after', None)
+    subreddit = request.args.get('subreddit', None)
+    payload = {'count': nextpagecount, 'after': after}
+    if isitsorted in sortedwords:    
+    	r = requests.get('http://www.reddit.com/r/{}/{}/.json'.format(subreddit,isitsorted),
+                     params=payload, headers={'user-agent': 'Mozilla/5.0'})
+    else:
+
+        r = requests.get('http://www.reddit.com/r/{}/.json'.format(subreddit),
+                     params=payload, headers={'user-agent': 'Mozilla/5.0'})
+    print(r.url)
+    d = {}
+    json_results = []
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']}
+            json_results.append(d)
+    paginationnumber = r.json()['data']['after']
+
+    # print("Done!")
+    global nextpagecount
+    nextpagecount = nextpagecount + 25
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber)
+
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-	text = ''
-	if request.method == 'POST':
-		text = request.form['text']
-		print(text)
-	subreddit = text
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-		#print(post)
-		domain = post['data']['domain']
-		if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    text = ''
+    if request.method == 'POST':
+        text = request.form['text']
+        print(text)
+    subreddit = text
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        # print(post)
+        domain = post['data']['domain']
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results, redditname = subreddit)
-
-
+                 }
+            json_results.append(d)
+            paginationnumber = r.json()['data']['after']
+    # print(newslist)
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/')
 def all():
-	subreddit = 'all'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'news'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/india')
 def india():
-	subreddit = 'India'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'India'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            print(post['data']['thumbnail'])
+            json_results.append(d)
+    paginationnumber = r.json()['data']['after']
+    # print(newslist)
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/worldnews')
 def worldnews():
-	subreddit = 'worldnews'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'worldnews'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
 
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/technology')
 def technology():
-	subreddit = 'Technology'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'Technology'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
 
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/upliftingnews')
 def upliftingnews():
-	subreddit = 'UpliftingNews'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'UpliftingNews'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
 
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/upliftingkhabre')
 def upliftingkhabre():
-	subreddit = 'UpliftingKhabre'
-	r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'UpliftingKhabre'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results ,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
 
 
 @app.route('/hot', methods=['GET'])
 def hotarticle():
-	subreddit = request.args.get('subreddit', None)
-	r = requests.get('http://www.reddit.com/r/{}/new.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = request.args.get('subreddit', None)
+    r = requests.get('http://www.reddit.com/r/{}/hot.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="hot")
 
 
 @app.route('/new', methods=['GET'])
 def newarticle():
-	subreddit = request.args.get('subreddit', None)
-	r = requests.get('http://www.reddit.com/r/{}/new.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = request.args.get('subreddit', None)
+    r = requests.get('http://www.reddit.com/r/{}/new.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="new")
 
 
 @app.route('/controversial', methods=['GET'])
 def controversialarticle():
-	subreddit = request.args.get('subreddit', None)
-	r = requests.get('http://www.reddit.com/r/{}/controversial.json'.format(subreddit),headers={'user-agent': 'Mozilla/5.0'} )
-	d = {}
-	json_results = []
-	#print(r.json()['data']['children'][0])
-	for post in r.json()['data']['children']:
-	    domain = post['data']['domain']
-          
-	    if domain not in notallowed_domain:
-		    d = {'url':post['data']['url'],
-		          'title':post['data']['title'],
-		          'domain':post['data']['domain'],
-		          'thumbnail':post['data']['thumbnail']
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = request.args.get('subreddit', None)
+    r = requests.get('http://www.reddit.com/r/{}/controversial.json'.format(
+        subreddit), headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
 
-		    }
-		    json_results.append(d)
-	#print(newslist)
-	return  render_template('Index.html',completelist = json_results,redditname = subreddit)
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="controversial")
+
 
 def temp():
-	article = Article("http://www.scmp.com/week-asia/geopolitics/article/2103656/indias-got-itself-fine-mess-doklam-its-time-get-out-and-let")
-	article.download()
-	article.parse()
-	tt = gTTS(text=article.text, lang="hi")
-	tt.save("News.wav")
-	print("Done!")
-
+    article = Article(
+        "http://www.scmp.com/week-asia/geopolitics/article/2103656/indias-got-itself-fine-mess-doklam-its-time-get-out-and-let")
+    article.download()
+    article.parse()
+    tt = gTTS(text=article.text, lang="hi")
+    tt.save("News.wav")
+    print("Done!")
 
 
 @app.route("/wav")
@@ -300,16 +379,18 @@ def streamwav():
             while data:
                 yield data
                 data = fwav.read(1024)
-    return Response(generate(), mimetype="audio/x-wav")	
+    return Response(generate(), mimetype="audio/x-wav")
+
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+
 @app.errorhandler(500)
 def page_not_found(e):
-    return render_template('500.html'), 500    
+    return render_template('500.html'), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
