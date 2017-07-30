@@ -13,11 +13,9 @@ notallowed_domain = ['youtube.com', 'self.india', 'self.worldnews', 'self.uplift
                      'self.UpliftingKhabre', 'self.tifu', 'self.jokes', 'self.PUBATTLEGROUNDS', 'self.ProRevenge',
                      'self.nba', 'self.MaliciousCompliance', 'self.ProRevenge',
                      'i.redd.it', 'i.imgur.com', 'i.redditmedia.com', 'youtu.be',
-                     'twitter.com', 'imgur.com', 'pbs.twimg.com','streamable.com','self.Jokes','self.explainlikeimfive','gfycat.com',
-                     'self.Showerthoughts','self.leagueoflegends','media.giphy.com','self.hearthstone','self.circlejerk','i.gyazo.com','self.AskReddit','clippituser.tv']
-
-
-
+                     'twitter.com', 'imgur.com', 'pbs.twimg.com', 'streamable.com', 'self.Jokes', 'self.explainlikeimfive', 'gfycat.com',
+                     'self.Showerthoughts', 'self.leagueoflegends', 'media.giphy.com', 'self.hearthstone', 'self.circlejerk', 'i.gyazo.com', 'self.AskReddit', 'clippituser.tv',
+                     'self.worldpolitics','self.uncensorednews','self.environment','self.Economics']
 
 
 @app.route('/audioandtext', methods=['GET'])
@@ -63,20 +61,20 @@ def audioandtext():
 
 @app.route('/nextpage', methods=['GET'])
 def nextpage():
-    #print(nextpagecount)
+    # print(nextpagecount)
     global nextpagecount
-    sortedwords = ['hot','new','controversial']
-    isitsorted=request.args.get('sorted', None) 
+    sortedwords = ['hot', 'new', 'controversial']
+    isitsorted = request.args.get('sorted', None)
     after = request.args.get('after', None)
     subreddit = request.args.get('subreddit', None)
     payload = {'count': nextpagecount, 'after': after}
-    if isitsorted in sortedwords:    
-    	r = requests.get('http://www.reddit.com/r/{}/{}/.json'.format(subreddit,isitsorted),
-                     params=payload, headers={'user-agent': 'Mozilla/5.0'})
+    if isitsorted in sortedwords:
+        r = requests.get('http://www.reddit.com/r/{}/{}/.json'.format(subreddit, isitsorted),
+                         params=payload, headers={'user-agent': 'Mozilla/5.0'})
     else:
 
         r = requests.get('http://www.reddit.com/r/{}/.json'.format(subreddit),
-                     params=payload, headers={'user-agent': 'Mozilla/5.0'})
+                         params=payload, headers={'user-agent': 'Mozilla/5.0'})
     print(r.url)
     d = {}
     json_results = []
@@ -109,20 +107,23 @@ def search():
     d = {}
     json_results = []
     # print(r.json()['data']['children'][0])
-    for post in r.json()['data']['children']:
-        # print(post)
-        domain = post['data']['domain']
-        if domain not in notallowed_domain:
-            d = {'url': post['data']['url'],
-                 'title': post['data']['title'],
-                 'domain': post['data']['domain'],
-                 'thumbnail': post['data']['thumbnail']
+    try:
+        for post in r.json()['data']['children']:
+            # print(post)
+            domain = post['data']['domain']
+            if domain not in notallowed_domain:
+                d = {'url': post['data']['url'],
+                     'title': post['data']['title'],
+                     'domain': post['data']['domain'],
+                     'thumbnail': post['data']['thumbnail']
 
-                 }
-            json_results.append(d)
-            paginationnumber = r.json()['data']['after']
+                     }
+                json_results.append(d)
+                paginationnumber = r.json()['data']['after']
+    except KeyError:
+        return render_template('searcherror.html', subreddit=subreddit)
     # print(newslist)
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/')
@@ -148,7 +149,7 @@ def all():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/india')
@@ -175,7 +176,7 @@ def india():
             json_results.append(d)
     paginationnumber = r.json()['data']['after']
     # print(newslist)
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/worldnews')
@@ -201,7 +202,7 @@ def worldnews():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/technology')
@@ -227,7 +228,7 @@ def technology():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/upliftingnews')
@@ -253,14 +254,14 @@ def upliftingnews():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
-@app.route('/upliftingkhabre')
-def upliftingkhabre():
+@app.route('/uncensorednews')
+def uncensorednews():
     global nextpagecount
     nextpagecount = 25
-    subreddit = 'UpliftingKhabre'
+    subreddit = 'uncensorednews'
     r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
                      headers={'user-agent': 'Mozilla/5.0'})
     d = {}
@@ -279,7 +280,85 @@ def upliftingkhabre():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="no")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
+
+
+@app.route('/environment')
+def environment():
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'environment'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
+
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
+
+
+@app.route('/economics')
+def economics():
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'economics'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
+
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
+
+
+@app.route('/worldpolitics')
+def worldpolitics():
+    global nextpagecount
+    nextpagecount = 25
+    subreddit = 'worldpolitics'
+    r = requests.get('http://www.reddit.com/r/{}.json'.format(subreddit),
+                     headers={'user-agent': 'Mozilla/5.0'})
+    d = {}
+    json_results = []
+    # print(r.json()['data']['children'][0])
+    for post in r.json()['data']['children']:
+        domain = post['data']['domain']
+
+        if domain not in notallowed_domain:
+            d = {'url': post['data']['url'],
+                 'title': post['data']['title'],
+                 'domain': post['data']['domain'],
+                 'thumbnail': post['data']['thumbnail']
+
+                 }
+            json_results.append(d)
+    # print(newslist)
+    paginationnumber = r.json()['data']['after']
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="no")
 
 
 @app.route('/hot', methods=['GET'])
@@ -357,7 +436,7 @@ def controversialarticle():
             json_results.append(d)
     # print(newslist)
     paginationnumber = r.json()['data']['after']
-    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber,sorted="controversial")
+    return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber, sorted="controversial")
 
 
 def temp():

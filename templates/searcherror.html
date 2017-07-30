@@ -7,14 +7,14 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
       <!-- Optional theme -->
       <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-      <title>Internal Error 500 | Audible Reddit</title>
+      <title>Page not found | Audible Reddit</title>
       <meta content="">
       <style>
          p {
          white-space: pre-wrap;
          }
          footer {
-         bottom: 0;    
+         bottom: 0;  
          background-color: #072454;
          color: #000000;
          padding: 32px;
@@ -51,9 +51,10 @@
    <body>
 {% block body %}
 <br>
-  <h1 class="text-center">Internal Server Error</h1>
+
+  <h1 class="text-center">Page Not Found</h1>
   <img width="504" height="504" class="rounded mx-auto d-block" src="/static/reddit404.png" alt="Card image cap">
-  <p class="text-center">Servers crushed under the load or Article have no text.
+  <h4 class="text-center">{{subreddit}} doesn't exist.</h4>
   <p class="text-center"><a href="{{ url_for('all') }}">Try again</a>
 {% endblock %}
       <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~ Required Javascript files ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
