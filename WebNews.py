@@ -17,8 +17,7 @@ notallowed_domain = ['youtube.com', 'self.india', 'self.worldnews', 'self.uplift
                      'self.Showerthoughts','self.leagueoflegends','media.giphy.com','self.hearthstone','self.circlejerk','i.gyazo.com','self.AskReddit','clippituser.tv']
 
 
-global nextpagecount
-nextpagecount = 25
+
 
 
 @app.route('/audioandtext', methods=['GET'])
@@ -64,7 +63,8 @@ def audioandtext():
 
 @app.route('/nextpage', methods=['GET'])
 def nextpage():
-    print(nextpagecount)
+    #print(nextpagecount)
+    global nextpagecount
     sortedwords = ['hot','new','controversial']
     isitsorted=request.args.get('sorted', None) 
     after = request.args.get('after', None)
@@ -91,7 +91,6 @@ def nextpage():
     paginationnumber = r.json()['data']['after']
 
     # print("Done!")
-    global nextpagecount
     nextpagecount = nextpagecount + 25
     return render_template('Index.html', completelist=json_results, redditname=subreddit, pagenumber=paginationnumber)
 
