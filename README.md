@@ -1,3 +1,3 @@
 # audiblereddit
-Helps users to listen or read news in their native language
+https://audiblereddit.herokuapp.com
 AudibleReddit uses Reddit API and helps users to listen or read the news articles posted on different subreddit in their native languages.
